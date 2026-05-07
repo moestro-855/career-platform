@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import PricingCards from '@/components/schools/PricingCards'
 
 export const metadata = {
   title: 'Профориентация для школ — КемСтать',
@@ -38,26 +39,6 @@ const features = [
   },
 ]
 
-const plans = [
-  {
-    name: 'Один класс',
-    price: 'Бесплатно',
-    desc: 'До 35 учеников',
-    features: ['Тест + AI-анализ', 'Мини-игры', 'Email-результаты'],
-    cta: 'Начать бесплатно',
-    href: '/test',
-    accent: false,
-  },
-  {
-    name: 'Школа',
-    price: '2 900 ₽/мес',
-    desc: 'Неограниченно учеников',
-    features: ['Всё из бесплатного', 'Сводная аналитика по классам', 'Экспорт отчётов PDF', 'Приоритетная поддержка'],
-    cta: 'Оставить заявку',
-    href: '#contact',
-    accent: true,
-  },
-]
 
 export default function SchoolsPage() {
   return (
@@ -119,33 +100,11 @@ export default function SchoolsPage() {
       {/* Plans */}
       <section className="py-20 px-6 bg-bg">
         <div className="mx-auto max-w-3xl">
-          <h2 className="font-display text-3xl font-bold text-fg text-center mb-14">Тарифы</h2>
-          <div className="grid gap-5 sm:grid-cols-2">
-            {plans.map(plan => (
-              <div key={plan.name}
-                className={`rounded-3xl border p-8 ${plan.accent ? 'border-accent bg-accent/4' : 'border-border bg-surface'}`}>
-                <div className="font-display text-xl font-bold text-fg">{plan.name}</div>
-                <div className={`text-3xl font-bold mt-3 mb-1 ${plan.accent ? 'text-accent' : 'text-fg'}`}>
-                  {plan.price}
-                </div>
-                <div className="text-sm text-muted mb-6">{plan.desc}</div>
-                <ul className="flex flex-col gap-2 mb-8">
-                  {plan.features.map(f => (
-                    <li key={f} className="flex items-center gap-2 text-sm text-fg/80">
-                      <span className="text-accent">✓</span> {f}
-                    </li>
-                  ))}
-                </ul>
-                <Link href={plan.href}
-                  className={`flex h-11 items-center justify-center rounded-2xl text-sm font-semibold transition-colors
-                    ${plan.accent
-                      ? 'bg-accent text-white hover:bg-accent-h'
-                      : 'border border-border text-fg hover:bg-surface'}`}>
-                  {plan.cta}
-                </Link>
-              </div>
-            ))}
+          <div className="text-center mb-14">
+            <h2 className="font-display text-3xl font-bold text-fg">Тарифы</h2>
+            <p className="text-muted mt-3">Начните бесплатно — платите только когда нужна аналитика по школе</p>
           </div>
+          <PricingCards />
         </div>
       </section>
 
