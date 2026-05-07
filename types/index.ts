@@ -16,6 +16,7 @@ export interface QuestionOption {
 export interface Question {
   id: number
   type: RIASECType
+  emoji: string
   text: string
   options: QuestionOption[]
 }
@@ -31,15 +32,23 @@ export interface Profession {
 
 export interface AIRecommendation {
   professionId: string
+  title: string
   matchPercent: number
   explanation: string
   personalNote: string
+  whyItFits: string
+  dayInLife: string
+  firstSteps: string[]
+  subjects: string[]
 }
 
 export interface AIAnalysisResult {
   recommendations: AIRecommendation[]
   strengths: string[]
   growthAreas: string[]
+  personalityProfile: string
+  motivationKey: string
+  careerPath: string
 }
 
 export interface TestState {

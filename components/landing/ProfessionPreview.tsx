@@ -1,13 +1,22 @@
 import Link from 'next/link'
+import { PROFESSIONS } from '@/lib/professions'
 
-const professions = [
-  { icon: '🏥', name: 'Врач', type: 'Социальный', color: 'bg-rose-50 border-rose-100' },
-  { icon: '💻', name: 'Программист', type: 'Исследовательский', color: 'bg-indigo-50 border-indigo-100' },
-  { icon: '🎨', name: 'Дизайнер', type: 'Артистический', color: 'bg-amber-50 border-amber-100' },
-  { icon: '⚖️', name: 'Юрист', type: 'Конвенциональный', color: 'bg-slate-50 border-slate-100' },
-  { icon: '🏗️', name: 'Инженер', type: 'Реалистичный', color: 'bg-emerald-50 border-emerald-100' },
-  { icon: '📊', name: 'Предприниматель', type: 'Предприимчивый', color: 'bg-orange-50 border-orange-100' },
+const SHOWN = [
+  'programmer', 'designer', 'doctor', 'entrepreneur',
+  'scientist', 'psychologist', 'journalist', 'teacher',
+  'chef', 'marketer', 'lawyer', 'architect',
 ]
+
+const TYPE_RU: Record<string, string> = {
+  realistic:     'Реалистичный',
+  investigative: 'Исследовательский',
+  artistic:      'Артистический',
+  social:        'Социальный',
+  enterprising:  'Предприимчивый',
+  conventional:  'Конвенциональный',
+}
+
+const shown = PROFESSIONS.filter(p => SHOWN.includes(p.id))
 
 export default function ProfessionPreview() {
   return (
@@ -18,19 +27,22 @@ export default function ProfessionPreview() {
             Какие профессии тебя ждут?
           </h2>
           <p className="mt-4 text-muted text-lg">
-            Более 30 профессий с реальными задачами и мини-играми
+            25+ профессий с реальными задачами и мини-играми
           </p>
         </div>
 
-        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
-          {professions.map((p) => (
+        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4">
+          {shown.map((p) => (
             <div
-              key={p.name}
-              className={`rounded-2xl border p-6 ${p.color} transition-transform hover:-translate-y-1`}
+              key={p.id}
+              className={`rounded-2xl border p-5 ${p.color} transition-transform hover:-translate-y-1`}
             >
-              <div className="text-4xl mb-3">{p.icon}</div>
-              <div className="font-display text-lg font-semibold text-fg">{p.name}</div>
-              <div className="text-xs text-muted mt-1">{p.type}</div>
+              <div className="text-3xl mb-3">{p.emoji}</div>
+              <div className="font-display text-sm font-semibold text-fg leading-tight">{p.name}</div>
+              <div className="text-xs text-muted mt-1">{TYPE_RU[p.riasecPrimary]}</div>
+              {p.gameAvailable && (
+                <div className="mt-2 text-xs font-medium text-accent">🎮 есть игра</div>
+              )}
             </div>
           ))}
         </div>
