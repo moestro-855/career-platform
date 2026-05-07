@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import PricingCards from '@/components/schools/PricingCards'
+import ContactForm from '@/components/schools/ContactForm'
 
 export const metadata = {
   title: 'Профориентация для школ — КемСтать',
@@ -114,29 +115,7 @@ export default function SchoolsPage() {
           <h2 className="font-display text-3xl font-bold mb-4">Оставить заявку</h2>
           <p className="text-bg/60 mb-10">Свяжемся в течение одного рабочего дня и поможем подключить школу</p>
 
-          <form className="flex flex-col gap-4 text-left">
-            <input
-              type="text"
-              placeholder="Ваше имя"
-              className="h-12 rounded-xl bg-bg/10 border border-bg/20 px-4 text-bg placeholder:text-bg/40 focus:outline-none focus:border-accent transition"
-            />
-            <input
-              type="text"
-              placeholder="Название школы"
-              className="h-12 rounded-xl bg-bg/10 border border-bg/20 px-4 text-bg placeholder:text-bg/40 focus:outline-none focus:border-accent transition"
-            />
-            <input
-              type="email"
-              placeholder="Email для связи"
-              className="h-12 rounded-xl bg-bg/10 border border-bg/20 px-4 text-bg placeholder:text-bg/40 focus:outline-none focus:border-accent transition"
-            />
-            <button
-              type="submit"
-              className="h-12 rounded-2xl bg-accent text-white font-semibold hover:bg-accent-h transition-colors"
-            >
-              Отправить заявку
-            </button>
-          </form>
+          <ContactForm />
 
           <p className="text-xs text-bg/30 mt-4">
             Или напишите напрямую: schools@kemstat.ru
