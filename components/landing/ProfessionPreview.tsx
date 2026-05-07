@@ -1,7 +1,7 @@
 import Link from 'next/link'
 
 const professions = [
-  { icon: '🩺', name: 'Врач', type: 'Социальный', color: 'bg-rose-50 border-rose-100' },
+  { icon: '🏥', name: 'Врач', type: 'Социальный', color: 'bg-rose-50 border-rose-100' },
   { icon: '💻', name: 'Программист', type: 'Исследовательский', color: 'bg-indigo-50 border-indigo-100' },
   { icon: '🎨', name: 'Дизайнер', type: 'Артистический', color: 'bg-amber-50 border-amber-100' },
   { icon: '⚖️', name: 'Юрист', type: 'Конвенциональный', color: 'bg-slate-50 border-slate-100' },

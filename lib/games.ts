@@ -151,7 +151,7 @@ export const GAMES: GameConfig[] = [
   {
     id: 'doctor',
     title: 'Врач',
-    emoji: '🩺',
+    emoji: '🏥',
     description: 'Помоги пациентам и прими правильные решения',
     riasecType: 'social',
     color: 'bg-rose-50 border-rose-200',
