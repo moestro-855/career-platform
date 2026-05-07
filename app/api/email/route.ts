@@ -13,33 +13,23 @@ export async function POST(req: NextRequest) {
 
     await resend.emails.send({
       from: 'КемСтать <onboarding@resend.dev>',
-      to: email,
-      subject: `${name}, твой профиль профориентации готов`,
+      to: 'muradcahaev2387@gmail.com',
+      subject: `Новый пользователь прошёл тест: ${name}`,
       html: `
 <!DOCTYPE html>
 <html lang="ru">
 <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
 <body style="font-family: system-ui, sans-serif; background: #FAFAF9; margin: 0; padding: 40px 20px;">
   <div style="max-width: 520px; margin: 0 auto; background: white; border-radius: 24px; padding: 40px; border: 1px solid #E7E5E4;">
-    <h1 style="font-size: 28px; font-weight: 700; color: #1C1917; margin: 0 0 8px;">Привет, ${name}! 👋</h1>
-    <p style="color: #78716C; font-size: 16px; line-height: 1.6; margin: 0 0 24px;">
-      Твой тест профориентации завершён. Вот краткая сводка твоего профиля:
-    </p>
+    <h1 style="font-size: 24px; font-weight: 700; color: #1C1917; margin: 0 0 16px;">📬 Новый пользователь прошёл тест</h1>
 
-    <div style="background: #F4F4F5; border-radius: 16px; padding: 20px; margin: 0 0 24px;">
-      <p style="font-size: 13px; color: #78716C; margin: 0 0 8px; text-transform: uppercase; letter-spacing: 0.05em;">Ведущие типы личности</p>
-      <p style="font-size: 18px; font-weight: 600; color: #1C1917; margin: 0;">${topTypes || 'см. на сайте'}</p>
+    <div style="background: #F4F4F5; border-radius: 16px; padding: 20px; margin: 0 0 20px;">
+      <p style="margin: 0 0 8px; color: #1C1917;"><b>Имя:</b> ${name}</p>
+      <p style="margin: 0 0 8px; color: #1C1917;"><b>Email:</b> ${email}</p>
+      <p style="margin: 0; color: #1C1917;"><b>Типы RIASEC:</b> ${topTypes || '—'}</p>
     </div>
 
-    <a href="https://kemstat.ru/results"
-      style="display: inline-block; background: #6366F1; color: white; text-decoration: none; padding: 14px 28px; border-radius: 16px; font-weight: 600; font-size: 15px; margin: 0 0 24px;">
-      Смотреть полный профиль →
-    </a>
-
-    <p style="color: #78716C; font-size: 13px; line-height: 1.6; margin: 0; border-top: 1px solid #E7E5E4; padding-top: 20px;">
-      Ты получил это письмо, потому что прошёл тест на КемСтать.
-      Если это были не вы — просто проигнорируйте письмо.
-    </p>
+    <p style="color: #78716C; font-size: 13px;">Пользователь запросил результаты на почту с сайта КемСтать.</p>
   </div>
 </body>
 </html>
