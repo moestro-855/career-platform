@@ -1,36 +1,254 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# КемСтать — Платформа профориентации для школьников
 
-## Getting Started
+> Подростки 13–17 лет проходят тест, получают AI-анализ профиля личности и пробуют профессии через мини-игры — всё до выбора пути.
 
-First, run the development server:
+**Сайт:** https://career-platform-snowy.vercel.app  
+**Стек:** Next.js 15 · TypeScript · Tailwind CSS v4 · OpenAI GPT-4o-mini · Framer Motion  
+**Деплой:** Vercel (автодеплой из GitHub при пуше в `main`)
+
+---
+
+## Как запустить локально
 
 ```bash
+npm install
+# Создай .env.local и заполни (см. раздел «Переменные окружения»)
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+# Открой http://localhost:3000
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+---
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Переменные окружения
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Файл `.env.local` (не коммитится в git):
 
-## Learn More
+```env
+OPENAI_API_KEY=sk-...          # GPT-4o-mini для AI-анализа результатов
+RESEND_API_KEY=re_...          # Email-уведомления (опционально)
+TELEGRAM_BOT_TOKEN=...         # Telegram-бот для заявок
+TELEGRAM_CHAT_ID=...           # Chat ID куда слать уведомления
+```
 
-To learn more about Next.js, take a look at the following resources:
+На Vercel эти переменные добавляются через **Settings → Environment Variables**.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+---
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Архитектура проекта
 
-## Deploy on Vercel
+```
+career-platform/
+│
+├── app/                          # Next.js App Router
+│   ├── page.tsx                  # Лендинг (7 секций)
+│   ├── test/page.tsx             # Страница теста
+│   ├── results/page.tsx          # Страница результатов
+│   ├── game/[id]/page.tsx        # Мини-игры по профессиям
+│   ├── schools/page.tsx          # Страница для школ (B2B)
+│   └── api/
+│       ├── analyze/route.ts      # POST → GPT-4o-mini анализ RIASEC
+│       └── subscribe/route.ts    # POST → Resend / Telegram уведомление
+│
+├── components/
+│   ├── landing/                  # Секции лендинга
+│   │   ├── Hero.tsx
+│   │   ├── HowItWorks.tsx
+│   │   ├── ProfessionPreview.tsx # Витрина профессий (из lib/professions.ts)
+│   │   ├── Testimonials.tsx
+│   │   ├── ForSchools.tsx
+│   │   ├── FinalCTA.tsx
+│   │   └── Footer.tsx
+│   ├── test/
+│   │   ├── TestShell.tsx         # Оркестратор теста (name → questions → save)
+│   │   ├── NameStep.tsx          # Шаг 1: имя и возраст
+│   │   └── QuestionCard.tsx      # Карточка вопроса с emoji и анимацией
+│   ├── results/
+│   │   ├── ResultsShell.tsx      # Полная страница результатов
+│   │   └── EmailCapture.tsx      # Форма захвата email после результатов
+│   ├── game/
+│   │   ├── GameShell.tsx         # Оркестратор игры
+│   │   └── GameResult.tsx        # Экран итогов игры
+│   └── ui/                       # shadcn/ui компоненты (не редактировать)
+│
+├── lib/
+│   ├── professions.ts            # Каталог 25 профессий (emoji, описание, зарплата, предметы)
+│   ├── questions.ts              # 36 вопросов RIASEC — сценарийный формат
+│   ├── games.ts                  # 10 мини-игр с 5 сценариями каждая
+│   ├── riasec.ts                 # Расчёт баллов RIASEC, топ-типы, метки
+│   ├── prompts.ts                # Версионированные GPT-промпты (v2)
+│   └── utils.ts                  # cn() и мелкие утилиты
+│
+└── types/
+    └── index.ts                  # Все TypeScript типы проекта
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+---
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Как работает пользовательский путь
+
+```
+Лендинг → /test → (вводит имя и возраст) → 36 вопросов →
+→ результаты сохраняются в localStorage →
+→ /results → POST /api/analyze → GPT-4o-mini →
+→ профиль личности + 4 профессии + карьерный путь →
+→ /game/[profession] → 5 сценариев → итог
+```
+
+---
+
+## Тест (RIASEC модель)
+
+**36 вопросов** — 6 на каждый из 6 типов личности:
+
+| Тип | Описание | Пример профессий |
+|-----|----------|-----------------|
+| **R** Realistic | Работа руками, техника | Инженер, Пилот, Шеф-повар |
+| **I** Investigative | Исследования, анализ | Учёный, Программист, Врач |
+| **A** Artistic | Творчество, выражение | Дизайнер, Режиссёр, Журналист |
+| **S** Social | Помощь людям | Психолог, Учитель, Соцработник |
+| **E** Enterprising | Лидерство, бизнес | Предприниматель, Маркетолог, Юрист |
+| **C** Conventional | Порядок, структура | Аналитик, Логист, Финансист |
+
+Каждый вопрос — **сценарийный** («Ты видишь сломанный самокат — что делаешь?»), а не trait-based («Я люблю работать руками»). Это снижает социальную желательность ответов.
+
+Каждый ответ: **2 (да) / 1 (может быть) / 0 (нет)**. Максимум 12 баллов на тип.
+
+---
+
+## AI-анализ (GPT-4o-mini)
+
+Промпт версии **v2** (файл `lib/prompts.ts`). Модель возвращает JSON:
+
+```typescript
+{
+  personalityProfile: string   // Образное описание личности (не пересказ баллов)
+  motivationKey: string        // Главный внутренний двигатель
+  strengths: string[]          // 4 конкретные сильные стороны
+  growthAreas: string[]        // 2 зоны роста
+  careerPath: string           // Карьерная траектория на 5-10 лет
+  recommendations: [           // Ровно 4 профессии
+    {
+      professionId: string
+      title: string
+      matchPercent: number     // 72–97%
+      explanation: string      // Почему подходит (ссылка на RIASEC-профиль)
+      whyItFits: string        // Что будет давать кайф каждый день
+      dayInLife: string        // Конкретный день специалиста
+      firstSteps: string[]     // 3 шага: сейчас / месяц / долгосрок
+      subjects: string[]       // Предметы ЕГЭ/ОГЭ
+      personalNote: string     // Тёплое личное обращение
+    }
+  ]
+}
+```
+
+---
+
+## Мини-игры (10 штук)
+
+Каждая игра — **5 сценариев** из реальной профессиональной жизни. Три варианта ответа, очки за правильные решения, объяснение после каждого выбора.
+
+| Игра | RIASEC | Описание |
+|------|--------|----------|
+| 💻 Программист | I | Находишь баги, принимаешь архитектурные решения |
+| 🎨 UX-Дизайнер | A | Работаешь с заказчиком, решаешь UX-проблемы |
+| 🏥 Врач | S | Ставишь диагнозы, общаешься с пациентами |
+| 🚀 Предприниматель | E | Проверяешь гипотезы, управляешь командой |
+| 🔭 Учёный | I | Эксперименты, научная этика, работа со студентами |
+| 🧠 Психолог | S | Сессии с клиентами, работа с сопротивлением |
+| 📰 Журналист | A | Верификация источников, работа под давлением |
+| 📚 Учитель | S | Объяснение материала, работа с трудными учениками |
+| 👨‍🍳 Шеф-повар | R | Кризисы на кухне, управление командой |
+| 📣 Маркетолог | E | Стратегия, аналитика, этика рекламы |
+
+---
+
+## Что уже работает
+
+- [x] Лендинг — 7 секций (Hero, HowItWorks, ProfessionPreview, Testimonials, ForSchools, FinalCTA, Footer)
+- [x] Тест RIASEC — 36 сценарийных вопросов с emoji, анимированные переходы
+- [x] AI-анализ — GPT-4o-mini с глубоким структурированным промптом v2
+- [x] Страница результатов — профиль личности, шкалы, карьерный путь, карточки профессий с expand
+- [x] 10 мини-игр с 5 сценариями каждая
+- [x] Email-захват после результатов (Resend + Telegram)
+- [x] Страница для школ (B2B) с тарифными планами и контактной формой
+- [x] Деплой на Vercel, автодеплой из GitHub
+
+---
+
+## Что можно улучшить
+
+### Высокий приоритет
+- [ ] **Персонализация игр** — после теста показывать сначала игры по топ-типам пользователя (сейчас все игры одинаково)
+- [ ] **Анимации в ResultsShell** — сейчас базовые; добавить confetti при загрузке, анимацию счётчика процентов
+- [ ] **Шеринг результатов** — кнопка «Поделиться в ВКонтакте/Telegram» с картинкой-результатом
+- [ ] **Сохранение результатов** — сейчас только localStorage; при перезагрузке на другом устройстве — пусто
+
+### Средний приоритет
+- [ ] **Больше профессий** — сейчас 25, цель 40+. Добавить: Архитектор, Кибербезопасность, Геймдизайнер, Фотограф, HR, Логист, Социальный работник
+- [ ] **Больше игр** — добавить: Архитектор, Учёный-химик, Юрист, Кибербезопасность
+- [ ] **Детальные страницы профессий** — `/profession/[id]` с полным описанием, зарплатами, вузами
+- [ ] **Прогресс-бар теста** — показывать не просто «вопрос 12 из 36», а секции (R→I→A→S→E→C)
+- [ ] **Мобильная оптимизация** — QuestionCard на маленьких экранах (< 375px) требует проверки
+
+### Долгосрочно (v2)
+- [ ] **Авторизация** — Supabase Auth, сохранение истории результатов
+- [ ] **Карта вузов** — привязка профессий к конкретным вузам и специальностям в России
+- [ ] **Родительский кабинет** — родитель видит результаты ребёнка и рекомендации
+- [ ] **Dashboard для школ** — агрегированная статистика по классу
+- [ ] **Повторный тест** — сравнение профиля «до и после» через 6 месяцев
+- [ ] **Мультиязычность** — английский интерфейс для диаспоры
+
+---
+
+## Дизайн-система
+
+Настроена в `app/globals.css` через CSS-переменные Tailwind v4:
+
+```css
+--color-accent: #6c63f6        /* Фиолетовый акцент */
+--color-fg: #1a1a2e            /* Основной текст */
+--color-bg: #f8f8fc            /* Фон страниц */
+--color-surface: #ffffff       /* Карточки */
+--color-border: #e8e8f0        /* Бордеры */
+--color-muted: #8888aa         /* Приглушённый текст */
+```
+
+Шрифты: **Plus Jakarta Sans** (заголовки, `font-display`) + **системный** (body).
+
+---
+
+## Как добавить новую профессию
+
+1. Добавь объект в `lib/professions.ts` → массив `PROFESSIONS`
+2. Если хочешь показать на лендинге — добавь `id` в массив `SHOWN` в `ProfessionPreview.tsx`
+3. Если для профессии есть игра — добавь `gameAvailable: true` и создай `GameConfig` в `lib/games.ts`
+
+## Как добавить новую игру
+
+1. Добавь `GameConfig` в `lib/games.ts` → массив `GAMES`
+2. В `lib/professions.ts` поставь `gameAvailable: true` для соответствующей профессии
+3. Игра автоматически появится в `/results` и на `/game/[id]`
+
+## Как изменить промпт GPT
+
+Все промпты в `lib/prompts.ts`. При изменении — увеличь `PROMPT_VERSION` (v2 → v3). Это помогает отследить когда изменился анализ.
+
+---
+
+## Технические решения и почему
+
+| Решение | Причина |
+|---------|---------|
+| localStorage для результатов | MVP — не нужна БД для хранения, достаточно в браузере |
+| GPT-4o-mini, не GPT-4o | В 10x дешевле, для структурированного JSON-вывода качества достаточно |
+| RIASEC модель | Научно валидированная, широко используется в профориентации |
+| Сценарийные вопросы | Снижают социальную желательность — подростки не «угадывают» правильный ответ |
+| Framer Motion | Анимации важны для ощущения «живого» продукта у подростковой аудитории |
+| Vercel | Бесплатный тир, автодеплой из GitHub, edge functions для API routes |
+| Resend free plan | Ограничение: from только `onboarding@resend.dev`, to только свой email |
+| Telegram-бот | Основной канал получения заявок в РФ — проще email, работает сразу |
+
+---
+
+*Создан: май 2026 · Стек: Next.js 15 + TypeScript + OpenAI + Vercel*
